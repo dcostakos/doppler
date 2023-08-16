@@ -28,9 +28,6 @@ description: Collection to leverage Doppler secrets in Ansible
 license:
   - GPL-3.0-or-later
 
-# The path to the license file for the collection. This path is relative to the root of the collection. This key is
-# mutually exclusive with 'license'
-license_file: 'https://www.gnu.org/licenses/gpl-3.0.txt'
 
 # A list of tags you want to associate with the collection for indexing/searching. A tag name has the same character
 # requirements as 'namespace' and 'name'
