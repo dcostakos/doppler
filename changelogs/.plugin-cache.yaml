@@ -1,0 +1,23 @@
+objects:
+  role: {}
+plugins:
+  become: {}
+  cache: {}
+  callback: {}
+  cliconf: {}
+  connection: {}
+  filter: {}
+  httpapi: {}
+  inventory: {}
+  lookup:
+    doppler_secrets:
+      description: Get secrets from Doppler as a lookup plugin
+      name: doppler_secrets
+      version_added: null
+  module: {}
+  netconf: {}
+  shell: {}
+  strategy: {}
+  test: {}
+  vars: {}
+version: 1.0.0
