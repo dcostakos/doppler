@@ -11,47 +11,46 @@ ANSIBLE_METADATA = {'metadata_version': '1.1', 'status': ["preview"], 'supported
 DOCUMENTATION = '''
 ---
 module: doppler_secrets
+short_description: CRUD operations on Doppler Secrets
 description:
 - Simple create/delete of secrets
 - Simple list of secrets
 - supports config/project
 - API token required
-requirements:
-- python >= 2.6
-- requests >= 2.18.4
+author:
+- Dave Costakos <dcostako@redhat.com>
 options:
   project:
     description:
-      - Unique identifier for the project object in Doppler
-      - Default set os env DOPPLER_PROJECT
+    - Unique identifier for the project object in Doppler
+    - Default set os env DOPPLER_PROJECT
     type: str
   config:
     description:
-      - Name of the config object in Doppler
-      - example 'dev', 'prd'
-      - May default to OS Environment variable DOPPLER_CONFIG
+    - Name of the config object in Doppler
+    - May default to OS Environment variable DOPPLER_CONFIG
     type: str
   name:
     description:
-      - Name of the Doppler secret.
-      - may default to OS Environment variable DOPPLER_NAME
+    - Name of the Doppler secret
+    - may default to OS Environment variable DOPPLER_NAME
     type: str
   url:
     description:
-      - the URL for the API instance of doppler
-      - May default to OS Environment variable DOPPLER_URL
+    - the URL for the API instance of doppler
+    - May default to OS Environment variable DOPPLER_URL
     type: str
     required: False
     default: https://api.doppler.com/v3
   token:
     description:
-      - Authentication token for doppler
-      - May default to OS Environment variable DOPPLER_TOKEN
+    - Authentication token for doppler
+    - May default to OS Environment variable DOPPLER_TOKEN
     type: str
     required: False
   timeout:
     description:
-      - Requests timeout value for url get
+    - Requests timeout value for url get
     type: int
     required: False
     default: 5
@@ -68,7 +67,7 @@ options:
     - the value of the stored secret
     - this will be set upon create
     - this will be updated if the secret's current value is not this
-    - value equates to the 'raw' setting for the secret which may reference other secrets
+    - value equates to the raw setting for the secret which may reference other secrets
     - Using references that are unable to be resolved results in an API error
     - See https://docs.doppler.com/docs/secrets#referencing-secrets
     type: str
@@ -119,20 +118,41 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-resources:
-  description: List of resources
-  returned: always
-  type: complex
-  name:
-    description:
-    - the name of the secret
-    returned: success
-    type: str
-  value:
-    description:
-    - the value of the secret
-    returned: success
-    type: jsonarg
+changed:
+  description: Whether something changed in Doppler as a result of this call
+  returned: success
+  type: bool
+  sample: true
+name:
+  description: Name of the secret created/updated
+  type: str
+  returned: success
+  sample: my_secret
+status_code:
+  description: HTTP status code returned by Doppler API
+  returned: success
+  type: int
+  sample: 200
+url:
+  description: the URL of the requested resource with encoded parameters
+  type: str
+  returned: success
+  sample: https://api.doppler.com/v3/configs/config/secret?name=MY_SECRET&project=example-project&config=dev
+value:
+  description: Secret value information
+  returned: success
+  type: dict
+  contains:
+    computed:
+      description: The dereferenced secret value
+      returned: success
+      type: str
+      sample: my_secret_value
+    raw:
+      description: The referenced secret value
+      returned: success
+      type: str
+      sample: ${SECRET_REFERENCE}
 '''
 
 # imports
@@ -143,6 +163,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 class DopplerException(Exception):
     pass
+
 
 def set_from_environ(module):
     for param in ['project', 'token', 'url', 'config', 'name']:
@@ -156,6 +177,7 @@ def set_from_environ(module):
 
 def get_url_params(module):
     return { k:module.params[k] for k in ('name','project','config') }
+
 
 def get_headers(module):
     return {
@@ -176,8 +198,10 @@ def get_secret(module):
         allow_not_found=True
     )
 
+
 def create_secret(module):
     return update_secret(module)
+
 
 def update_secret(module):
     payload = {
@@ -203,6 +227,7 @@ def update_secret(module):
     )
     return get_secret(module)
 
+
 # not documented, but what the heck
 def delete_secret(module):
     payload = {
@@ -227,6 +252,7 @@ def delete_secret(module):
           timeout=module.params['timeout']),
     )
 
+
 def return_if_object(module, response, allow_not_found=False):
     result = response.json()
 
@@ -242,6 +268,7 @@ def return_if_object(module, response, allow_not_found=False):
 
         module.fail_json(msg=f"Unexpected REST failure {response.json()}")
     return result
+
 
 def run_module():
     module_args = dict(
@@ -308,8 +335,10 @@ def run_module():
         result['note'] = "Not returning value because return_value set to false"
     module.exit_json(**result)
 
+
 def main():
     run_module()
+
 
 if __name__ == '__main__':
     main()

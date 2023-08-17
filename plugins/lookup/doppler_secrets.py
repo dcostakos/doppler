@@ -7,7 +7,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
     author:
     - Dave Costakos <dcostako@redhat.com>
-    name: doppler_secrets
+    module: doppler_secrets
     short_description: Get secrets from Doppler as a lookup plugin
     description:
     - retreive secrets via key name and config from doppler api
@@ -62,6 +62,7 @@ EXAMPLES = '''
       msg: "{{ lookup('dcostaks.doppler.doppler_secrets',
                name='secret_name',
                config='dev',
+               token=doppler_token,
                project='secret_project') }}"
 '''
 
@@ -84,8 +85,10 @@ from ansible.plugins.lookup import LookupBase
 from ansible.errors import AnsibleError
 from ansible.utils.display import Display
 
+
 class DopplerException(Exception):
     pass
+
 
 class LookupModule(LookupBase):
     def run(self, terms=None, variables=None, **kwargs):
