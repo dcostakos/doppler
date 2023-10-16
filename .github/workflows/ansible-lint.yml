@@ -7,10 +7,6 @@ jobs:
     name: Ansible Lint # Naming the build is important to use it as a status check
     runs-on: ubuntu-latest
     steps:
-      - name: ansible-glaxy install collections
-        run: |
-          ansible-galaxy collection install git+https://github.com/ansible-collections/cloud.terraform.git,stable-1.1
-
       - uses: actions/checkout@v4
 
       - name: Run ansible-lint
