@@ -8,3 +8,4 @@ exclude_paths:
   - ./roles/gcp_http_lb/
   - ./tests/
   - ./plugins
+  - /.github/
