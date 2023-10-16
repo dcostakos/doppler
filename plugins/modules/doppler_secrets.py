@@ -98,7 +98,7 @@ EXAMPLES = '''
     project: secret_project
     config: dev
     token: my_token
-    return_value: False
+    return_value: false
 
 - name: Delete a doppler secret secret
   dcostakos.doppler.doppler_secrets:

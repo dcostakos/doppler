@@ -57,13 +57,13 @@ DOCUMENTATION = '''
 '''
 
 EXAMPLES = '''
-  - name: Test retrieving a secret
-    ansible.builtin.debug:
-      msg: "{{ lookup('dcostaks.doppler.doppler_secrets',
-               name='secret_name',
-               config='dev',
-               token=doppler_token,
-               project='secret_project') }}"
+- name: Test retrieving a secret
+  ansible.builtin.debug:
+    msg: "{{ lookup('dcostaks.doppler.doppler_secrets',
+             name='secret_name',
+             config='dev',
+             token=doppler_token,
+             project='secret_project') }}"
 '''
 
 RETURN = '''
