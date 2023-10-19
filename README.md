@@ -10,6 +10,14 @@ The collection uses the python requests library which should be installed.
 ```
 pip install requests
 ```
+You may install the collection with Ansible-Galaxy via git directly:
+```
+ansible-galaxy collection install git+https://github.com/dcostakos/doppler.git,stable-1.0.1
+```
+or simply from galaxy:
+```
+ansible-galaxy collection install dcostakos.doppler
+```
 
 ## Features
 - CRUD Operations on Secrets
