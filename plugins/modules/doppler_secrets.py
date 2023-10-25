@@ -156,23 +156,13 @@ value:
 '''
 
 # imports
-import os
 import requests
 
-from ansible.module_utils.basic import AnsibleModule
-
-class DopplerException(Exception):
-    pass
-
-
-def set_from_environ(module):
-    for param in ['project', 'token', 'url', 'config', 'name']:
-        if not module.params[param]:
-            env_name = f"DOPPLER_{param.upper()}"
-            if os.environ(env_name):
-                module.params[param] = os.environ(env_name)
-            else:
-                raise DopplerException(f"Unable to set {param} from module or env {env_name}")
+from ansible.module_utils.basic import AnsibleModule, env_fallback
+from ansible_collections.dcostakos.doppler.plugins.module_utils.doppler_utils import (
+    DopplerException,
+    DopplerModule,
+)
 
 
 def get_url_params(module):
@@ -256,7 +246,7 @@ def delete_secret(module):
 def return_if_object(module, response, allow_not_found=False):
     result = response.json()
 
-    if allow_not_found and response.status_code == 400:
+    if allow_not_found and (response.status_code == 400 or response.status_code == 404):
         return None
     elif response.status_code == 200:
         result = response.json()
@@ -271,27 +261,20 @@ def return_if_object(module, response, allow_not_found=False):
 
 
 def run_module():
-    module_args = dict(
-        name=dict(type='str'),
-        project=dict(type='str'),
-        config=dict(type='str'),
-        url=dict(type='str', default='https://api.doppler.com/v3'),
-        token=dict(type='str'),
-        timeout=dict(type='int', default=5),
-        state=dict(type='str', default='present', choices=['present','absent'], ),
-        value=dict(type='str'),
-        return_value=dict(type='bool', default=True),
+    module = DopplerMoodule(
+        argument_spec = dict(
+            name=dict(type='str', fallback=(env_fallback, ['DOPPLER_NAME'])),
+            state=dict(type='str', default='present', choices=['present','absent'], ),
+            value=dict(type='str'),
+            return_value=dict(type='bool', default=True),
+        ),
+        supports_check_mode=True
     )
     result = dict(
         changed=False,
         message=''
     )
-    module = AnsibleModule(
-        argument_spec=module_args,
-        supports_check_mode=True
-    )
 
-    set_from_environ(module)
     if module.check_mode:
         module.exit_json(**result)
 
