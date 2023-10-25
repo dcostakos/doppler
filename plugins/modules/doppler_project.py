@@ -135,7 +135,7 @@ def return_if_object(module, response, allow_not_found=False):
     return result
 
 def run_module():
-    module = DopplerMoodule(
+    module = DopplerModule(
         argument_spec = dict(
             project=dict(
                 type='str',

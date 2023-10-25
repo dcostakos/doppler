@@ -261,7 +261,7 @@ def return_if_object(module, response, allow_not_found=False):
 
 
 def run_module():
-    module = DopplerMoodule(
+    module = DopplerModule(
         argument_spec = dict(
             name=dict(type='str', fallback=(env_fallback, ['DOPPLER_NAME'])),
             state=dict(type='str', default='present', choices=['present','absent'], ),
