@@ -160,7 +160,6 @@ import requests
 
 from ansible.module_utils.basic import AnsibleModule, env_fallback
 from ansible_collections.dcostakos.doppler.plugins.module_utils.doppler_utils import (
-    DopplerException,
     DopplerModule,
 )
 
@@ -183,7 +182,8 @@ def get_secret(module):
           f"{module.params['url']}/configs/config/secret",
           params=get_url_params(module),
           headers=get_headers(module),
-          timeout=module.params['timeout']
+          timeout=module.params['timeout'],
+          verify=module.params['validate_certs']
         ),
         allow_not_found=True
     )
@@ -212,7 +212,8 @@ def update_secret(module):
         requests.post(
           f"{module.params['url']}/configs/config/secrets",
           json=payload, headers=headers,
-          timeout=module.params['timeout']
+          timeout=module.params['timeout'],
+          verify=module.params['validate_certs']
         )
     )
     return get_secret(module)
@@ -239,7 +240,8 @@ def delete_secret(module):
         requests.post(
           f"{module.params['url']}/configs/config/secrets",
           json=payload, headers=headers,
-          timeout=module.params['timeout']),
+          timeout=module.params['timeout'],
+          verify=module.params['validate_certs']),
     )
 
 
@@ -256,7 +258,9 @@ def return_if_object(module, response, allow_not_found=False):
         result['status_code'] = response.status_code
     else:
 
-        module.fail_json(msg=f"Unexpected REST failure {response.json()}")
+        module.fail_json(
+            msg=f"Unexpected REST failure {response.json()} - {module._req_to_string(response.request)}"
+        )
     return result
 
 

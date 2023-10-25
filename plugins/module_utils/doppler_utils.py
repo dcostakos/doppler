@@ -21,7 +21,7 @@ class DopplerModule(AnsibleModule):
             arg_spec,
             dict(
                 url=dict(type='str', fallback=(env_fallback, ['DOPPLER_URL']), default="https://api.doppler.com/v3"),
-                validate_certs=dict(type='bool', default=False),
+                validate_certs=dict(type='bool', default=True),
                 timeout=dict(type='int', default=5),
                 token=dict(type='str', fallback=(env_fallback, ['DOOPLER_TOKEN'])),
                 project=dict(type='str', fallback=(env_fallback, ['DOPPLER_PROJECT'])),
@@ -49,3 +49,6 @@ class DopplerModule(AnsibleModule):
         new = copy.deepcopy(a)
         new.update(b)
         return new
+
+    def _req_to_string(self, req):
+        return f"url: {req.url}, method: {req.method}, body: {req.body}"

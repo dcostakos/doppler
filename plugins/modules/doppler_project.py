@@ -67,13 +67,24 @@ from ansible_collections.dcostakos.doppler.plugins.module_utils.doppler_utils im
 )
 
 def get_url_params(module):
-    return { k:module.params[k] for k in ('project') }
+    return { 'project': module.params['project']}
 
 def get_headers(module):
     return {
         "Accept": "application/json",
         "Authorization": f"Bearer {module.params['token']}"
     }
+
+def list_projects(module):
+    return return_if_object(
+        module,
+        requests.get(
+            f"{module.params['url']}/projects",
+            headers=get_headers(module),
+            timeout=module.params['timeout'],
+            verify=module.params['validate_certs']
+        )
+    )
 
 def get_project(module):
     return return_if_object(
@@ -82,40 +93,58 @@ def get_project(module):
           f"{module.params['url']}/projects/project",
           params=get_url_params(module),
           headers=get_headers(module),
-          timeout=module.params['timeout']
+          timeout=module.params['timeout'],
+          verify=module.params['validate_certs']
         ),
         allow_not_found=True
     )
 
 def create_project(module):
-    return update_project(module)
+    payload = {
+        "name": module.params['project'],
+        "description": module.params['description']
+    }
+    headers = get_headers(module)
+    headers['content-type'] = "application/json"
+    return return_if_object(
+        module,
+        requests.post(
+          f"{module.params['url']}/projects",
+          json=payload, headers=headers,
+          timeout=module.params['timeout'],
+          verify=module.params['validate_certs']
+        )
+    )
 
 def delete_project(module):
     payload = { "project": module.params['project'] }
     headers = get_headers(module)
     headers['content-type'] = "application/json"
-    return_if_object(
+    return return_if_object(
         module,
         requests.delete(
             f"{module.params['url']}/projects/project",
             json=payload, headers=headers,
-            timeout=module.params.get['timeout']
+            timeout=module.params['timeout'],
+            verify=module.params['validate_certs']
         )
     )
 
 def update_project(module):
     payload = {
+        "name": module.params['project'],
         "project": module.params['project'],
         "description": module.params['description']
     }
     headers = get_headers(module)
     headers['content-type'] = "application/json"
-    return_if_object(
+    return return_if_object(
         module,
         requests.post(
           f"{module.params['url']}/projects/project",
           json=payload, headers=headers,
-          timeout=module.params['timeout']
+          timeout=module.params['timeout'],
+          verify=module.params['validate_certs']
         )
     )
 
@@ -128,10 +157,13 @@ def return_if_object(module, response, allow_not_found=False):
         result = response.json()
         if result.get('value') and result.get('value').get('raw') is None:
             return None
-        result['url'] = response.request.url
+        result['req'] = module._req_to_string(response.request)
         result['status_code'] = response.status_code
     else:
-        module.fail_json(msg=f"Unexpected REST failure {response.json()}")
+        module.fail_json(
+            msg=f"Unexpected REST failure {response.json()}, {module._req_to_string(response.request)}"
+        )
+
     return result
 
 def run_module():
@@ -140,12 +172,12 @@ def run_module():
             project=dict(
                 type='str',
                 aliases=['name'],
-                fallback=(env_fallback, ['DOPPLER_PROJECT']),
-                required=True),
-            descripton=dict(
+                fallback=(env_fallback, ['DOPPLER_PROJECT'])),
+            description=dict(
                 type='str',
                 fallback=(env_fallback, ['DOPPLER_DESCRIPTION']),
                 required=False),
+            list=dict(type='bool', default=False),
             state=dict(type='str', default='present', choices=['present','absent'], ),
         ),
         supports_check_mode=True
@@ -158,9 +190,15 @@ def run_module():
     if module.check_mode:
         module.exit_json(**result)
 
+    if module.params['list'] == True:
+        result = list_projects(module)
+        module.exit_json(**result)
+
+    if module.params.get('project') is None:
+        module.fail_json(msg="project or name is a required parameter")
+
     if module.params['description'] is None:
         module.params['description'] = f"Project {module.params['project']}"
-
 
     result = get_project(module)
     if module.params['state'] == 'present':
