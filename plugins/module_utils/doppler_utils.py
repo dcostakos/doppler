@@ -20,7 +20,7 @@ class DopplerModule(AnsibleModule):
         kwargs['argument_spec'] = self._merge_dictionaries(
             arg_spec,
             dict(
-                url=dict(type='str', fallback=(env_fallback, ['DOPPLER_URL'])),
+                url=dict(type='str', fallback=(env_fallback, ['DOPPLER_URL']), default="https://api.doppler.com/v3"),
                 validate_certs=dict(type='bool', default=False),
                 timeout=dict(type='int', default=5),
                 token=dict(type='str', fallback=(env_fallback, ['DOOPLER_TOKEN'])),
