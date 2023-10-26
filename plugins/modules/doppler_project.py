@@ -133,7 +133,7 @@ project:
 # imports
 import requests
 
-from ansible.module_utils.basic import AnsibleModule, env_fallback
+from ansible.module_utils.basic import env_fallback
 from ansible_collections.dcostakos.doppler.plugins.module_utils.doppler_utils import (
     DopplerModule,
 )
