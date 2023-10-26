@@ -8,12 +8,12 @@
 
 ANSIBLE_METADATA = {'metadata_version': '1.1', 'status': ["preview"], 'supported_by': 'community'}
 
-DOCUMENTATION = '''
-module: doppler_project
-short_description: CRUD operations on Doppler Projects
+DOCUMENTATION='''
+module: doppler_environment
+short_description: CRUD operations on Doppler Environments
 description:
-- Simple create/delete of projects
-- Simple list of projects
+- Simple create/delete of environments
+- Simple list of environments
 author:
 - Dave Costakos <dcostako@redhat.com>
 options:
@@ -22,12 +22,18 @@ options:
     - Unique identifier for the project object in Doppler
     - Default set os env DOPPLER_PROJECT
     type: str
-  description:
+  slug:
     description:
-    - Description for the project
-    - Default set os env DOPPLER_DESCRIPTION
-    type: str
-    aliases:
+    - the doppler SLUG for this environment (see the API docs)
+    - Default set os env DOPPLER_SLUG
+    - May fall back to snake case of environment if not set
+    - one of slug or environment must be set
+  environment:
+    description:
+    - the readable doppler Environment name
+    - Default set os env DOPPLER_ENVIRONMENT
+    - May fall back to slug if not set
+    - one of slug or environment must be set
   url:
     description:
     - the URL for the API instance of doppler
@@ -58,31 +64,29 @@ options:
 '''
 
 EXAMPLES='''
-  - name: Get an existing project
-    dcostakos.doppler.doppler_project:
-      project: "example-project"
-      token: "my_token"
-      description: "An example project with some sample secrets."
-      state: present
-    register: project
+- name: list environment in project env-project
+  dcostakos.doppler.doppler_environment:
+    project: 'env-project'
+    list: true
+    token: my_token
+  register: environments
 
-  - name: Create a project
-    dcostakos.doppler.doppler_project:
-      project: "ansible-project"
-      token: "{{ doppler_token }}"
-    register: project
+- name: create environment in project env-project
+  dcostakos.doppler.doppler_environment:
+    project: 'env-project'
+    environment: "CI"
+    slug: "ci"
+    state: present
+    token: my_token
+  register: environment
 
-  - name: List all projects
-    dcostakos.doppler.doppler_project:
-      token: my_token
-      list: true
-    register: project
-
-  - name: Test deleting project
-    dcostakos.doppler.doppler_project:
-      project: "ansible-project"
-      token: my_token
-      state: absent
+- name: delete environment in project env-project
+  dcostakos.doppler.doppler_environment:
+    project: 'env-project'
+    slug: 'ci'
+    state: absent
+    token: my_token
+  register: environment
 '''
 
 RETURN='''
@@ -101,45 +105,60 @@ status_code:
   type: int
   returned: success
   sample: 200
-project:
-  description: When creating or getting an existing project, return the API details
-  returned: success
+environment:
+  description: representation of the doppler environment
   type: dict
+  returned: success
   contains:
-    created_at:
-      description: The timestamp when the project was created
-      returned: success
-      type: str
-      sample: 2023-10-26T15:41:00.307Z
-    description:
-      description: The project's description
-      returned: success
-      type: str
-      sample: Project ansible-project
-    id:
-      description: The doppler project id
-      returned: success
-      type: str
     name:
-      description: The doppler project name
       returned: success
+      description: Display name of the environment
       type: str
+      sample: "Development"
+    id:
+      returned: success
+      description: ID of the environment (usually same as slug)
+      type: str
+      sample: dev
     slug:
-      description: The doppler project slug
       returned: success
+      description: SLUG of the environment (usually same as slug)
       type: str
+      sample: dev
+    project:
+      returned: success
+      description: Name of the project this environment is part of
+      type: str
+      sample: "env-project"
+    created_at:
+      returned: success
+      description: Timestamp that the environment was created
+      type: str
+      sample: 2023-10-26T16:35:27.939Z
+    initial_fetch_at:
+      returned: success
+      description: Timestamp for initial fetch (from API).  Often null
+      type: str
+      sample: null
 '''
 
 # imports
 import requests
+import re
 
 from ansible.module_utils.basic import env_fallback
 from ansible_collections.dcostakos.doppler.plugins.module_utils.doppler_utils import (
     DopplerModule,
 )
 
+def toSnakeCase(string):
+    string = re.sub(r'(?<=[a-z])(?=[A-Z])|[^a-zA-Z]', ' ', string).strip().replace(' ', '_')
+    return ''.join(string.lower())
+
 def get_url_params(module):
-    return { 'project': module.params['project']}
+    return {
+        'project': module.params['project']
+    }
 
 def get_headers(module):
     return {
@@ -147,23 +166,27 @@ def get_headers(module):
         "Authorization": f"Bearer {module.params['token']}"
     }
 
-def list_projects(module):
+def list_environments(module):
+    params = get_url_params(module)
     return return_if_object(
         module,
         requests.get(
-            f"{module.params['url']}/projects",
+            f"{module.params['url']}/environments",
             headers=get_headers(module),
+            params=params,
             timeout=module.params['timeout'],
             verify=module.params['validate_certs']
         )
     )
 
-def get_project(module):
+def get_environment(module):
+    params = get_url_params(module)
+    params['environment'] = module.params['environment']
     return return_if_object(
         module,
         requests.get(
-          f"{module.params['url']}/projects/project",
-          params=get_url_params(module),
+          f"{module.params['url']}/environments/environment",
+          params=params,
           headers=get_headers(module),
           timeout=module.params['timeout'],
           verify=module.params['validate_certs']
@@ -171,52 +194,34 @@ def get_project(module):
         allow_not_found=True
     )
 
-def create_project(module):
-    payload = {
-        "name": module.params['project'],
-        "description": module.params['description']
-    }
+def create_environment(module):
+    payload = get_url_params(module)
+    payload['name'] = module.params['environment']
+    payload['slug'] = module.params['slug']
     headers = get_headers(module)
     headers['content-type'] = "application/json"
     return return_if_object(
         module,
         requests.post(
-          f"{module.params['url']}/projects",
+          f"{module.params['url']}/environments",
           json=payload, headers=headers,
           timeout=module.params['timeout'],
           verify=module.params['validate_certs']
         )
     )
 
-def delete_project(module):
-    payload = { "project": module.params['project'] }
+def delete_environment(module):
+    payload = get_url_params(module)
+    payload['environment'] = module.params['slug']
     headers = get_headers(module)
     headers['content-type'] = "application/json"
     return return_if_object(
         module,
         requests.delete(
-            f"{module.params['url']}/projects/project",
+            f"{module.params['url']}/environments/environment",
             json=payload, headers=headers,
             timeout=module.params['timeout'],
             verify=module.params['validate_certs']
-        )
-    )
-
-def update_project(module):
-    payload = {
-        "name": module.params['project'],
-        "project": module.params['project'],
-        "description": module.params['description']
-    }
-    headers = get_headers(module)
-    headers['content-type'] = "application/json"
-    return return_if_object(
-        module,
-        requests.post(
-          f"{module.params['url']}/projects/project",
-          json=payload, headers=headers,
-          timeout=module.params['timeout'],
-          verify=module.params['validate_certs']
         )
     )
 
@@ -243,12 +248,16 @@ def run_module():
         argument_spec = dict(
             project=dict(
                 type='str',
-                aliases=['name'],
+                required=True,
                 fallback=(env_fallback, ['DOPPLER_PROJECT'])),
-            description=dict(
+            environment=dict(
                 type='str',
-                fallback=(env_fallback, ['DOPPLER_DESCRIPTION']),
-                required=False),
+                fallback=(env_fallback, ['DOPPLER_ENVIRONMENT'])
+            ),
+            slug=dict(
+                type='str',
+                fallback=(env_fallback, ['DOPPLER_ENVIRONMENT_SLUG'])
+            ),
             list=dict(type='bool', default=False),
             state=dict(type='str', default='present', choices=['present','absent'], ),
         ),
@@ -263,35 +272,33 @@ def run_module():
         module.exit_json(**result)
 
     if module.params['list'] == True:
-        result = list_projects(module)
+        result = list_environments(module)
         module.exit_json(**result)
 
-    if module.params.get('project') is None:
-        module.fail_json(msg="project or name is a required parameter")
+    if module.params.get('environment') is None and module.params.get('slug') is None:
+        module.fail_json(msg="Either environment or slug must be provided")
 
-    if module.params['description'] is None:
-        module.params['description'] = f"Project {module.params['project']}"
+    if module.params.get('slug') is None:
+        module.params['slug'] = toSnakeCase(module.params['environment'])
 
-    result = get_project(module)
+    if module.params.get('environment') is None:
+        module.params['environment'] = module.params['slug']
+
+    result = get_environment(module)
     if module.params['state'] == 'present':
         if result is None:
-            result = create_project(module)
+            result = create_environment(module)
             result['changed'] = True
-        else:
-            if result['project']['description'] != module.params['description']:
-                result = update_project(module)
-                result['changed'] = True
 
     else:
         if result:
-            result = delete_project(module)
+            result = delete_environment(module)
             result['changed'] = True
 
     module.exit_json(**result)
 
 def main():
     run_module()
-
 
 if __name__ == '__main__':
     main()
