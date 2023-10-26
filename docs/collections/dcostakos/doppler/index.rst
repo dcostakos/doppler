@@ -22,7 +22,7 @@ Collection to leverage Doppler secrets in Ansible
 
 **Supported ansible-core versions:**
 
-* 2.9.10 or newer
+* 2.13.0 or newer
 
 Collection links
 ~~~~~~~~~~~~~~~~
@@ -41,6 +41,8 @@ These are the plugins in the dcostakos.doppler collection:
 Modules
 ~~~~~~~
 
+* `doppler_environment module <doppler_environment_module.rst>`_ -- CRUD Operations on Doppler Environments
+* `doppler_project module <doppler_project_module.rst>`_ -- CRUD operations on Doppler Projects
 * `doppler_secrets module <doppler_secrets_module.rst>`_ -- CRUD operations on Doppler Secrets
 
 

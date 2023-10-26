@@ -1,8 +1,8 @@
 
 .. Created with antsibull-docs 2.5.0
 
-dcostakos.doppler.doppler_secrets module -- CRUD operations on Doppler Secrets
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+dcostakos.doppler.doppler_project module -- CRUD operations on Doppler Projects
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 This module is part of the `dcostakos.doppler collection <https://galaxy.ansible.com/ui/repo/published/dcostakos/doppler/>`_ (version 1.0.1).
 
@@ -11,7 +11,7 @@ To check whether it is installed, run ``ansible-galaxy collection list``.
 
 To install it, use: :code:`ansible-galaxy collection install dcostakos.doppler`.
 
-To use it in a playbook, specify: ``dcostakos.doppler.doppler_secrets``.
+To use it in a playbook, specify: ``dcostakos.doppler.doppler_project``.
 
 
 .. contents::
@@ -22,10 +22,8 @@ To use it in a playbook, specify: ``dcostakos.doppler.doppler_secrets``.
 Synopsis
 --------
 
-- Simple create/delete of secrets
-- Simple list of secrets
-- supports config/project
-- API token required
+- Simple create/delete of projects
+- Simple list of projects
 
 
 
@@ -49,30 +47,16 @@ Parameters
   <tbody>
   <tr>
     <td valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-config"></div>
-      <p style="display: inline;"><strong>config</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-config" title="Permalink to this option"></a>
+      <div class="ansibleOptionAnchor" id="parameter-description"></div>
+      <p style="display: inline;"><strong>description</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-description" title="Permalink to this option"></a>
       <p style="font-size: small; margin-bottom: 0;">
         <span style="color: purple;">string</span>
       </p>
     </td>
     <td valign="top">
-      <p>Name of the config object in Doppler</p>
-      <p>May default to OS Environment variable DOPPLER_CONFIG</p>
-    </td>
-  </tr>
-  <tr>
-    <td valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-name"></div>
-      <p style="display: inline;"><strong>name</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">string</span>
-      </p>
-    </td>
-    <td valign="top">
-      <p>Name of the Doppler secret</p>
-      <p>may default to OS Environment variable DOPPLER_NAME</p>
+      <p>Description for the project</p>
+      <p>Default set os env DOPPLER_DESCRIPTION</p>
     </td>
   </tr>
   <tr>
@@ -87,27 +71,6 @@ Parameters
     <td valign="top">
       <p>Unique identifier for the project object in Doppler</p>
       <p>Default set os env DOPPLER_PROJECT</p>
-    </td>
-  </tr>
-  <tr>
-    <td valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-return_value"></div>
-      <p style="display: inline;"><strong>return_value</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-return_value" title="Permalink to this option"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">boolean</span>
-      </p>
-    </td>
-    <td valign="top">
-      <p>Whether to return the value or not</p>
-      <p>if true (default), return the decrypted value</p>
-      <p>if false, do not return, useful for validating a secret exists</p>
-      <p style="margin-top: 8px;"><b">Choices:</b></p>
-      <ul>
-        <li><p><code>false</code></p></li>
-        <li><p><code style="color: blue;"><b>true</b></code> <span style="color: blue;">← (default)</span></p></li>
-      </ul>
-
     </td>
   </tr>
   <tr>
@@ -172,35 +135,12 @@ Parameters
       <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">&#34;https://api.doppler.com/v3&#34;</code></p>
     </td>
   </tr>
-  <tr>
-    <td valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-value"></div>
-      <p style="display: inline;"><strong>value</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-value" title="Permalink to this option"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">string</span>
-      </p>
-    </td>
-    <td valign="top">
-      <p>the value of the stored secret</p>
-      <p>this will be set upon create</p>
-      <p>this will be updated if the secret&#x27;s current value is not this</p>
-      <p>value equates to the raw setting for the secret which may reference other secrets</p>
-      <p>Using references that are unable to be resolved results in an API error</p>
-      <p>See https://docs.doppler.com/docs/secrets#referencing-secrets</p>
-    </td>
-  </tr>
   </tbody>
   </table>
 
 
 
 
-Notes
------
-
-- API Reference \ https://docs.doppler.com/reference/api\ 
-- Official Documentation \ https://docs.doppler.com/docs\ 
 
 
 Examples
@@ -209,37 +149,31 @@ Examples
 .. code-block:: yaml
 
     
-    - name: Create a new doppler secret
-      dcostakos.doppler.doppler_secrets:
-        name: my_secret
-        project: secret_project
-        config: dev
-        token: my_token
-        value: super_secret
+    - name: Get an existing project
+      dcostakos.doppler.doppler_project:
+        project: "example-project"
+        token: "my_token"
+        description: "An example project with some sample secrets."
+        state: present
+      register: project
 
-    - name: Validate that doppler secret exists
-      dcostakos.doppler.doppler_secrets:
-        name: my_secret
-        project: secret_project
-        config: dev
+    - name: Create a project
+      dcostakos.doppler.doppler_project:
+        project: "ansible-project"
         token: my_token
-        return_value: false
+      register: project
 
-    - name: Delete a doppler secret secret
-      dcostakos.doppler.doppler_secrets:
-        name: my_secret
-        project: secret_project
-        config: dev
+    - name: List all projects
+      dcostakos.doppler.doppler_project:
+        token: my_token
+        list: true
+      register: project
+
+    - name: Test deleting project
+      dcostakos.doppler.doppler_project:
+        project: "ansible-project"
         token: my_token
         state: absent
-
-    - name: Update a doppler secret
-      dcostakos.doppler.doppler_secrets:
-        name: my_secret
-        project: secret_project
-        config: dev
-        token: my_token
-        value: super_secret_new_value
 
 
 
@@ -276,17 +210,108 @@ The following are the fields unique to this module:
   </tr>
   <tr>
     <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="return-name"></div>
-      <p style="display: inline;"><strong>name</strong></p>
-      <a class="ansibleOptionLink" href="#return-name" title="Permalink to this return value"></a>
+      <div class="ansibleOptionAnchor" id="return-project"></div>
+      <p style="display: inline;"><strong>project</strong></p>
+      <a class="ansibleOptionLink" href="#return-project" title="Permalink to this return value"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">dictionary</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>When creating or getting an existing project, return the API details</p>
+      <p style="margin-top: 8px;"><b>Returned:</b> success</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="return-project/created_at"></div>
+      <p style="display: inline;"><strong>created_at</strong></p>
+      <a class="ansibleOptionLink" href="#return-project/created_at" title="Permalink to this return value"></a>
       <p style="font-size: small; margin-bottom: 0;">
         <span style="color: purple;">string</span>
       </p>
     </td>
     <td valign="top">
-      <p>Name of the secret created/updated</p>
+      <p>The timestamp when the project was created</p>
       <p style="margin-top: 8px;"><b>Returned:</b> success</p>
-      <p style="margin-top: 8px; color: blue; word-wrap: break-word; word-break: break-all;"><b style="color: black;">Sample:</b> <code>&#34;my_secret&#34;</code></p>
+      <p style="margin-top: 8px; color: blue; word-wrap: break-word; word-break: break-all;"><b style="color: black;">Sample:</b> <code>&#34;2023-10-26T15:41:00.307000+00:00&#34;</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="return-project/description"></div>
+      <p style="display: inline;"><strong>description</strong></p>
+      <a class="ansibleOptionLink" href="#return-project/description" title="Permalink to this return value"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>The project&#x27;s description</p>
+      <p style="margin-top: 8px;"><b>Returned:</b> success</p>
+      <p style="margin-top: 8px; color: blue; word-wrap: break-word; word-break: break-all;"><b style="color: black;">Sample:</b> <code>&#34;Project ansible-project&#34;</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="return-project/id"></div>
+      <p style="display: inline;"><strong>id</strong></p>
+      <a class="ansibleOptionLink" href="#return-project/id" title="Permalink to this return value"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>The doppler project id</p>
+      <p style="margin-top: 8px;"><b>Returned:</b> success</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="return-project/name"></div>
+      <p style="display: inline;"><strong>name</strong></p>
+      <a class="ansibleOptionLink" href="#return-project/name" title="Permalink to this return value"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>The doppler project name</p>
+      <p style="margin-top: 8px;"><b>Returned:</b> success</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="return-project/slug"></div>
+      <p style="display: inline;"><strong>slug</strong></p>
+      <a class="ansibleOptionLink" href="#return-project/slug" title="Permalink to this return value"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>The doppler project slug</p>
+      <p style="margin-top: 8px;"><b>Returned:</b> success</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="return-req"></div>
+      <p style="display: inline;"><strong>req</strong></p>
+      <a class="ansibleOptionLink" href="#return-req" title="Permalink to this return value"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>details about the request that was made to dopplers&#x27; api</p>
+      <p style="margin-top: 8px;"><b>Returned:</b> success</p>
     </td>
   </tr>
   <tr>
@@ -299,72 +324,11 @@ The following are the fields unique to this module:
       </p>
     </td>
     <td valign="top">
-      <p>HTTP status code returned by Doppler API</p>
+      <p>The HTTP status code of the request</p>
       <p style="margin-top: 8px;"><b>Returned:</b> success</p>
       <p style="margin-top: 8px; color: blue; word-wrap: break-word; word-break: break-all;"><b style="color: black;">Sample:</b> <code>200</code></p>
     </td>
   </tr>
-  <tr>
-    <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="return-url"></div>
-      <p style="display: inline;"><strong>url</strong></p>
-      <a class="ansibleOptionLink" href="#return-url" title="Permalink to this return value"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">string</span>
-      </p>
-    </td>
-    <td valign="top">
-      <p>the URL of the requested resource with encoded parameters</p>
-      <p style="margin-top: 8px;"><b>Returned:</b> success</p>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="return-value"></div>
-      <p style="display: inline;"><strong>value</strong></p>
-      <a class="ansibleOptionLink" href="#return-value" title="Permalink to this return value"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">dictionary</span>
-      </p>
-    </td>
-    <td valign="top">
-      <p>Secret value information</p>
-      <p style="margin-top: 8px;"><b>Returned:</b> success</p>
-    </td>
-  </tr>
-  <tr>
-    <td></td>
-    <td valign="top">
-      <div class="ansibleOptionAnchor" id="return-value/computed"></div>
-      <p style="display: inline;"><strong>computed</strong></p>
-      <a class="ansibleOptionLink" href="#return-value/computed" title="Permalink to this return value"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">string</span>
-      </p>
-    </td>
-    <td valign="top">
-      <p>The dereferenced secret value</p>
-      <p style="margin-top: 8px;"><b>Returned:</b> success</p>
-      <p style="margin-top: 8px; color: blue; word-wrap: break-word; word-break: break-all;"><b style="color: black;">Sample:</b> <code>&#34;my_secret_value&#34;</code></p>
-    </td>
-  </tr>
-  <tr>
-    <td></td>
-    <td valign="top">
-      <div class="ansibleOptionAnchor" id="return-value/raw"></div>
-      <p style="display: inline;"><strong>raw</strong></p>
-      <a class="ansibleOptionLink" href="#return-value/raw" title="Permalink to this return value"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">string</span>
-      </p>
-    </td>
-    <td valign="top">
-      <p>The referenced secret value</p>
-      <p style="margin-top: 8px;"><b>Returned:</b> success</p>
-      <p style="margin-top: 8px; color: blue; word-wrap: break-word; word-break: break-all;"><b style="color: black;">Sample:</b> <code>&#34;${SECRET_REFERENCE}&#34;</code></p>
-    </td>
-  </tr>
-
   </tbody>
   </table>
 

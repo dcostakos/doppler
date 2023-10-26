@@ -8,7 +8,7 @@
 
 ANSIBLE_METADATA = {'metadata_version': '1.1', 'status': ["preview"], 'supported_by': 'community'}
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: doppler_secrets
 short_description: CRUD operations on Doppler Secrets
@@ -83,7 +83,7 @@ notes:
 - 'Official Documentation U(https://docs.doppler.com/docs)'
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: Create a new doppler secret
   dcostakos.doppler.doppler_secrets:
     name: my_secret
@@ -117,7 +117,7 @@ EXAMPLES = '''
     value: super_secret_new_value
 '''
 
-RETURN = '''
+RETURN = r'''
 changed:
   description: Whether something changed in Doppler as a result of this call
   returned: success
@@ -132,16 +132,11 @@ status_code:
   description: HTTP status code returned by Doppler API
   returned: success
   type: int
-  sample: url: https://api.doppler.com/v3/projects, method: POST, body: b'{\"name\": \"ansible-project\", \"description\": \"Project ansible-project\"}
+  sample: 200
 url:
   description: the URL of the requested resource with encoded parameters
   type: str
   returned: success
-  sample: https://api.doppler.com/v3/configs/config/secret?name=MY_SECRET&project=example-project&config=dev
-status_code:
-  description: The HTTP status code of the URL request
-  type: int
-  returned:
 value:
   description: Secret value information
   returned: success

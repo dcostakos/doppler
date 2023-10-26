@@ -8,7 +8,8 @@
 
 ANSIBLE_METADATA = {'metadata_version': '1.1', 'status': ["preview"], 'supported_by': 'community'}
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
+---
 module: doppler_project
 short_description: CRUD operations on Doppler Projects
 description:
@@ -57,32 +58,32 @@ options:
     type: str
 '''
 
-EXAMPLES='''
-  - name: Get an existing project
-    dcostakos.doppler.doppler_project:
-      project: "example-project"
-      token: "my_token"
-      description: "An example project with some sample secrets."
-      state: present
-    register: project
+EXAMPLES = r'''
+- name: Get an existing project
+  dcostakos.doppler.doppler_project:
+    project: "example-project"
+    token: "my_token"
+    description: "An example project with some sample secrets."
+    state: present
+  register: project
 
-  - name: Create a project
-    dcostakos.doppler.doppler_project:
-      project: "ansible-project"
-      token: "{{ doppler_token }}"
-    register: project
+- name: Create a project
+  dcostakos.doppler.doppler_project:
+    project: "ansible-project"
+    token: my_token
+  register: project
 
-  - name: List all projects
-    dcostakos.doppler.doppler_project:
-      token: my_token
-      list: true
-    register: project
+- name: List all projects
+  dcostakos.doppler.doppler_project:
+    token: my_token
+    list: true
+  register: project
 
-  - name: Test deleting project
-    dcostakos.doppler.doppler_project:
-      project: "ansible-project"
-      token: my_token
-      state: absent
+- name: Test deleting project
+  dcostakos.doppler.doppler_project:
+    project: "ansible-project"
+    token: my_token
+    state: absent
 '''
 
 RETURN='''
@@ -95,7 +96,6 @@ req:
   description: details about the request that was made to dopplers' api
   returned: success
   type: str
-  sample: url: https://api.doppler.com/v3/projects, method: POST, body: b'{\"name\": \"ansible-project\", \"description\": \"Project ansible-project\"}
 status_code:
   description: The HTTP status code of the request
   type: int

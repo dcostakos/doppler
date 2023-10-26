@@ -8,50 +8,51 @@
 
 ANSIBLE_METADATA = {'metadata_version': '1.1', 'status': ["preview"], 'supported_by': 'community'}
 
-DOCUMENTATION='''
+DOCUMENTATION = r'''
+---
 module: doppler_environment
-short_description: CRUD operations on Doppler Environments
+short_description: CRUD Operations on Doppler Environments
+version_added: 2.0
 description:
-- Simple create/delete of environments
-- Simple list of environments
-author:
-- Dave Costakos <dcostako@redhat.com>
+  - Create, Read, and Delete Doppler Environments
 options:
   project:
     description:
-    - Unique identifier for the project object in Doppler
-    - Default set os env DOPPLER_PROJECT
+    - Unique Name fo the project to use for this environment
+    - Default set from OS env variable DOPPLER_PROJECT
     type: str
   slug:
     description:
-    - the doppler SLUG for this environment (see the API docs)
+    - The doppler SLUG for this environment (see the API docs)
     - Default set os env DOPPLER_SLUG
     - May fall back to snake case of environment if not set
-    - one of slug or environment must be set
+    - One of slug or environment must be set
+    type: str
   environment:
     description:
-    - the readable doppler Environment name
+    - The readable doppler Environment name
     - Default set os env DOPPLER_ENVIRONMENT
     - May fall back to slug if not set
-    - one of slug or environment must be set
+    - One of slug or environment must be set
+    type: str
   url:
     description:
     - the URL for the API instance of doppler
     - May default to OS Environment variable DOPPLER_URL
     type: str
-    required: False
+    required: false
     default: https://api.doppler.com/v3
   token:
     description:
     - Authentication token for doppler
     - May default to OS Environment variable DOPPLER_TOKEN
     type: str
-    required: False
+    required: false
   timeout:
     description:
-    - Requests timeout value for url get
+      - Requests timeout value for url get
     type: int
-    required: False
+    required: false
     default: 5
   state:
     description:
@@ -61,10 +62,10 @@ options:
     - absent
     - present
     type: str
+    required: false
 '''
-
-EXAMPLES='''
-- name: list environment in project env-project
+EXAMPLES = r'''
+- name: list environments in project env-project
   dcostakos.doppler.doppler_environment:
     project: 'env-project'
     list: true
@@ -89,7 +90,7 @@ EXAMPLES='''
   register: environment
 '''
 
-RETURN='''
+RETURN = r'''
 changed:
   description: Whether something changed in Doppler as a result of this call
   returned: success
@@ -99,7 +100,6 @@ req:
   description: details about the request that was made to dopplers' api
   returned: success
   type: str
-  sample: url: https://api.doppler.com/v3/projects, method: POST, body: b'{\"name\": \"ansible-project\", \"description\": \"Project ansible-project\"}
 status_code:
   description: The HTTP status code of the request
   type: int
@@ -141,7 +141,6 @@ environment:
       type: str
       sample: null
 '''
-
 # imports
 import requests
 import re
