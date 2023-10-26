@@ -132,12 +132,16 @@ status_code:
   description: HTTP status code returned by Doppler API
   returned: success
   type: int
-  sample: 200
+  sample: url: https://api.doppler.com/v3/projects, method: POST, body: b'{\"name\": \"ansible-project\", \"description\": \"Project ansible-project\"}
 url:
   description: the URL of the requested resource with encoded parameters
   type: str
   returned: success
   sample: https://api.doppler.com/v3/configs/config/secret?name=MY_SECRET&project=example-project&config=dev
+status_code:
+  description: The HTTP status code of the URL request
+  type: int
+  returned:
 value:
   description: Secret value information
   returned: success

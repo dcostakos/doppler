@@ -55,7 +55,79 @@ options:
     - absent
     - present
     type: str
+'''
 
+EXAMPLES='''
+  - name: Get an existing project
+    dcostakos.doppler.doppler_project:
+      project: "example-project"
+      token: "my_token"
+      description: "An example project with some sample secrets."
+      state: present
+    register: project
+
+  - name: Create a project
+    dcostakos.doppler.doppler_project:
+      project: "ansible-project"
+      token: "{{ doppler_token }}"
+    register: project
+
+  - name: List all projects
+    dcostakos.doppler.doppler_project:
+      token: my_token
+      list: true
+    register: project
+
+  - name: Test deleting project
+    dcostakos.doppler.doppler_project:
+      project: "ansible-project"
+      token: my_token
+      state: absent
+'''
+
+RETURN='''
+changed:
+  description: Whether something changed in Doppler as a result of this call
+  returned: success
+  type: bool
+  sample: true
+req:
+  description: details about the request that was made to dopplers' api
+  returned: success
+  type: str
+  sample: url: https://api.doppler.com/v3/projects, method: POST, body: b'{\"name\": \"ansible-project\", \"description\": \"Project ansible-project\"}
+status_code:
+  description: The HTTP status code of the request
+  type: int
+  returned: success
+  sample: 200
+project:
+  description: When creating or getting an existing project, return the API details
+  returned: success
+  type: dict
+  contains:
+    created_at:
+      description: The timestamp when the project was created
+      returned: success
+      type: str
+      sample: 2023-10-26T15:41:00.307Z
+    description:
+      description: The project's description
+      returned: success
+      type: str
+      sample: Project ansible-project
+    id:
+      description: The doppler project id
+      returned: success
+      type: str
+    name:
+      description: The doppler project name
+      returned: success
+      type: str
+    slug:
+      description: The doppler project slug
+      returned: success
+      type: str
 '''
 
 # imports
