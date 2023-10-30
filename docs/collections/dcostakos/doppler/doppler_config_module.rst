@@ -172,7 +172,7 @@ Examples
         project: 'ansible-project'
         environment: 'ci'
         list: true
-        token: "{{ doppler_token }}"
+        token: my_token
       register: config
 
     - name: Create ci_config config in ci environment in ansible-project
@@ -181,7 +181,7 @@ Examples
         environment: 'ci'
         name: 'ci-config'
         state: present
-        token: "{{ doppler_token }}"
+        token: my_token
       register: config
 
     - name: Delete ci_config config in ci environment in ansible-project
@@ -190,7 +190,7 @@ Examples
         environment: 'ci'
         name: 'ci-config'
         state: absent
-        token: "{{ doppler_token }}"
+        token: my_token
       register: config
 
 
