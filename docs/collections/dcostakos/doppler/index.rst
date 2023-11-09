@@ -43,6 +43,7 @@ Modules
 
 * `doppler_config module <doppler_config_module.rst>`_ -- CRUD operations on Doppler Config objects
 * `doppler_environment module <doppler_environment_module.rst>`_ -- CRUD Operations on Doppler Environments
+* `doppler_integration module <doppler_integration_module.rst>`_ -- CRD operations on Doppler Integrations
 * `doppler_project module <doppler_project_module.rst>`_ -- CRUD operations on Doppler Projects
 * `doppler_secrets module <doppler_secrets_module.rst>`_ -- CRUD operations on Doppler Secrets
 
