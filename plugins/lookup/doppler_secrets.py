@@ -14,6 +14,10 @@ DOCUMENTATION = '''
     - once a secret is retrieved, it is decoded and up to the developer to maintain the
       secrecy of the variable in which is is stored.
     - See https://docs.doppler.com/reference/secrets-get for details
+    notes:
+    - if you are using a version of ansible before 2.14 with the lookup plugin,
+      you may get an error message that reads '_lookup() got multiple values for argument 'name'"'
+    - if that is so, please try to replace 'name' with 'secretname' and see the lookup examples
 
     options:
         project:
@@ -29,12 +33,13 @@ DOCUMENTATION = '''
             - May default to OS Environment variable DOPPLER_CONFIG
             type: str
             required: False
-        name:
+        secretname:
             description:
               - Name of the Doppler secret.
               - may default to OS Environment variable DOPPLER_NAME
             type: str
             required: False
+            aliases: [name]
         url:
             description:
               - the URL for the API instance of doppler
@@ -60,10 +65,19 @@ EXAMPLES = '''
 - name: Test retrieving a secret
   ansible.builtin.debug:
     msg: "{{ lookup('dcostaks.doppler.doppler_secrets',
-             name='secret_name',
-             config='dev',
-             token=doppler_token,
-             project='secret_project') }}"
+               name='secret_name',
+               config='dev',
+               token=doppler_token,
+               project='secret_project') }}"
+
+
+- name: For versions of anisble before 2.14, 'name' may generate an error, try this
+  ansible.builtin.debug:
+    msg: "{{ lookup('dcostakos.doppler.doppler_secrets',
+               secretname='secret_name',
+               config='dev',
+               token=doppler_token,
+               project='secret_project') }}"
 '''
 
 RETURN = '''
@@ -83,7 +97,6 @@ except ImportError:
 import os
 from ansible.plugins.lookup import LookupBase
 from ansible.errors import AnsibleError
-from ansible.utils.display import Display
 
 
 class DopplerException(Exception):
@@ -92,7 +105,6 @@ class DopplerException(Exception):
 
 class LookupModule(LookupBase):
     def run(self, terms=None, variables=None, **kwargs):
-        self._display = Display()
         if not HAS_REQUESTS:
             raise AnsibleError(
                 """doppler_secrets needs the python requests library to be installed"""
@@ -100,9 +112,9 @@ class LookupModule(LookupBase):
 
         self.set_options(var_options=variables, direct=kwargs)
         params = {}
-        for param in ['project', 'config', 'url', 'name', 'token']:
+        for param in ['project', 'config', 'url', 'secretname', 'token']:
             params[param] = self.get_option_with_fallback(param)
-        self._display.vvv(f"Lookup params: {params}")
+
         self.validate(params)
         return [self.secret_lookup(params)]
 
@@ -111,7 +123,7 @@ class LookupModule(LookupBase):
         req_params = {
             "project": params['project'],
             "config": params['config'],
-            "name": params['name']
+            "name": params['secretname']
         }
         req_headers = {
             "Accept": "application/json",
@@ -119,9 +131,6 @@ class LookupModule(LookupBase):
         }
         response = requests.get(url, params=req_params, headers=req_headers,
                                 timeout=self.get_option('timeout'))
-        self._display.vvv(
-            f"Response: {response.status_code} {response.json} w params {req_params}"
-        )
 
         if response.status_code != 200:
             raise DopplerException(
@@ -138,14 +147,13 @@ class LookupModule(LookupBase):
         if val:
             return val
         else:
-            self._display.vvv(f"Param {name} not avaible,default to env variable")
             if env_var is None:
                 env_var = f"DOPPLER_{name.upper()}"
             val = os.environ(env_var)
             return val
 
     def validate(self, params):
-        for param in ['project', 'config', 'name', 'token', 'url']:
+        for param in ['project', 'config', 'secretname', 'token', 'url']:
             if not params[param]:
                 raise DopplerException(f"Unable to find configuration item {param}, cannot proceed")
         return True
